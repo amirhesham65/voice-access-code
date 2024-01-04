@@ -28,6 +28,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.p = pyaudio.PyAudio()
 
         self.record_button.pressed.connect(self.start_stop_recording)
+        self.reset_button.pressed.connect(self.reset)
+
+
+    def reset(self):
+        self.spectrogram_graph.canvas.axes.clear()
+        self.spectrogram_graph.canvas.draw()
+        person_label_map = {
+            "amir_hesham": self.amir_hesham,
+            "omar_emad": self.omar_emad,
+            "farah_ossama": self.farah_ossama,
+            "omar_mohamed": self.omar_mohamed,
+            "merna_abdelmoez": self.merna_abdelmoez,
+            "mohamed_elsayed": self.mohamed_elsayed,
+            "omar_nabil": self.omar_nabil,
+            "ossama_mohamed": self.ossama_mohamed,
+        }
+        for label in person_label_map.values():  
+            label.setText('0%')
+        
+        sentence_label_map = {
+            "open_middle_door": self.omd,
+            "grant_me_access": self.gma,
+            "unlock_the_gate": self.utg,
+        }
+
+        for label in sentence_label_map.values():
+            label.setText('0%')    
+
 
     def setup_classifiers(self):
         data_path = "data/combined_train_speakers.csv"
@@ -58,7 +86,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.record_button.setText("Record")
         self.stream.stop_stream()
         self.stream.close()
-        self.p.terminate()
         self.save_recorded_audio()
         self.plot_spectrogram()
         extract_input_features("./input/recorded_audio.wav")
@@ -117,9 +144,13 @@ class MainWindow(QtWidgets.QMainWindow):
             "omar_nabil": self.omar_nabil,
             "ossama_mohamed": self.ossama_mohamed,
         }
+        
 
         for person, label in person_label_map.items():
-            label.setText(str(int(persons_conf[person])) + "%")
+            if persons_conf.get(person):
+                label.setText(str(int(persons_conf[person])) + "%")
+            else:    
+                label.setText('0%')
 
         # Update sentence prediction confidences
         sentence_label_map = {

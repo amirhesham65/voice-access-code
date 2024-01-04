@@ -898,7 +898,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="reset_button">
           <property name="minimumSize">
            <size>
             <width>120</width>
@@ -938,7 +938,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
      <x>0</x>
      <y>0</y>
      <width>825</width>
-     <height>24</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
