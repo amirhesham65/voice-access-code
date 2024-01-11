@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 from PyQt6 import QtWidgets, uic
 import pyaudio
 from scipy.io import wavfile
-from feature_extraction import extract_input_features
 
+import test
+from feature_extraction import extract_input_features
+from test import compare_sentences
 from models.person_classifier import PersonClassifier
 from models.sentence_classifier import SentenceClassifier
 
@@ -127,10 +129,7 @@ class MainWindow(QtWidgets.QMainWindow):
         return result
 
     def _predict_sentence(self):
-        result = self.sentence_classifier.predict(
-            pickle_path="pickles/sentence_detection_model.pkl",
-            input_path="./input/recorded_audio.csv",
-        )
+        result = test.compare_sentences('./input/recorded_audio.wav')
         return result
 
     def _update_data(self, persons_conf, sent_conf):
