@@ -1,9 +1,6 @@
 import speech_recognition as sr
 from fuzzywuzzy import fuzz
-
-open_middle_door_sentence = "samples/omar/open middle door/omar_omd1.wav"
-grant_me_access_sentence = "samples/omar/grant me access/omar_gma1.wav"
-unlock_the_gate_sentence = "samples/omar/unlock the gate/omar_utg1.wav"
+import pickle
 
 def transcribe_wav(file_path):
     recognizer = sr.Recognizer()
@@ -28,27 +25,17 @@ def compare_sentences(test_sentence):
 
     test_sample = transcribe_wav(test_sentence)
 
-    sim_score_with_omd = fuzz.ratio(test_sample, omd_transcription)
-    sim_score_with_gma = fuzz.ratio(test_sample, gma_transcription)
-    sim_score_with_utg = fuzz.ratio(test_sample, utg_transcription)
+    sim_score_with_omd = min(fuzz.ratio(test_sample, omd_transcription), 90)
+    sim_score_with_gma = min(fuzz.ratio(test_sample, gma_transcription), 90)
+    sim_score_with_utg = min(fuzz.ratio(test_sample, utg_transcription), 90)
 
     sentence_similarity_dict = {'open_middle_door': sim_score_with_omd,
                                 'grant_me_access': sim_score_with_gma,
                                 'unlock_the_gate': sim_score_with_utg}
-    print(sentence_similarity_dict)
+    # print(sentence_similarity_dict)
 
-    # Normalize scores
-    def normalize_scores(scores_dict):
-        total_score = sum(scores_dict.values())
+    return sentence_similarity_dict
 
-        if total_score == 0:
-            print("Total score is zero, cannot normalize.")
-            return scores_dict
-
-        normalized_dict = {key: round(((value / total_score) * 100), 3) for key, value in scores_dict.items()}
-        return normalized_dict
-
-    normalized_similarity_dict = normalize_scores(sentence_similarity_dict)
-    print("Normalized Scores:", normalized_similarity_dict)
-
-    return normalized_similarity_dict
+# Save the function as a pickle file
+with open('pickles/sentence_detection.pkl', 'wb') as file:
+    pickle.dump(compare_sentences, file)

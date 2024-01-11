@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from PyQt6 import QtWidgets, uic
 import pyaudio
 from scipy.io import wavfile
-
+import pickle
 import test
 from feature_extraction import extract_input_features
 from test import compare_sentences
@@ -129,7 +129,12 @@ class MainWindow(QtWidgets.QMainWindow):
         return result
 
     def _predict_sentence(self):
-        result = test.compare_sentences('./input/recorded_audio.wav')
+        with open('pickles/sentence_detection.pkl', 'rb') as file:
+            loaded_function = pickle.load(file)
+
+        # Example usage
+        result = loaded_function("./input/recorded_audio.wav")
+        print(result)
         return result
 
     def _update_data(self, persons_conf, sent_conf):
