@@ -5,9 +5,7 @@ from PyQt6 import QtWidgets, uic
 import pyaudio
 from scipy.io import wavfile
 import pickle
-import test
 from feature_extraction import extract_input_features
-from test import compare_sentences
 from models.person_classifier import PersonClassifier
 from models.sentence_classifier import SentenceClassifier
 
