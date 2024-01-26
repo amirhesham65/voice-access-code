@@ -5,9 +5,13 @@ from PyQt6 import QtWidgets, uic
 import pyaudio
 from scipy.io import wavfile
 import pickle
+
+import demo
 from feature_extraction import extract_input_features
 from models.person_classifier import PersonClassifier
 from models.sentence_classifier import SentenceClassifier
+from demo import detect_person
+import torch
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -30,7 +34,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.record_button.pressed.connect(self.start_stop_recording)
         self.reset_button.pressed.connect(self.reset)
 
-
     def reset(self):
         self.spectrogram_graph.canvas.axes.clear()
         self.spectrogram_graph.canvas.draw()
@@ -44,9 +47,9 @@ class MainWindow(QtWidgets.QMainWindow):
             "omar_nabil": self.omar_nabil,
             "ossama_mohamed": self.ossama_mohamed,
         }
-        for label in person_label_map.values():  
+        for label in person_label_map.values():
             label.setText('0%')
-        
+
         sentence_label_map = {
             "open_middle_door": self.omd,
             "grant_me_access": self.gma,
@@ -54,8 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
         }
 
         for label in sentence_label_map.values():
-            label.setText('0%')    
-
+            label.setText('0%')
 
     def setup_classifiers(self):
         data_path = "data/combined_train_speakers.csv"
@@ -88,10 +90,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stream.close()
         self.save_recorded_audio()
         self.plot_spectrogram()
-        extract_input_features("./input/recorded_audio.wav")
+        input_features = extract_input_features("./input/recorded_audio.wav")
 
         # Get results
-        persons_conf = self._predict_person()
+        print(input_features)
+        persons_conf = demo.detect_person(input_features)
+        print(persons_conf)
+
+        # Convert confidence values to a list of floats
+        values = [float(value) for value in persons_conf.values()]
+
+        # Convert the list to a PyTorch tensor
+        values_torch = torch.tensor(values, dtype=torch.float32)
+        print("Original Tensor:", values_torch)
+
+        # Take the exponential of the values
+        values_exp = torch.exp(values_torch)
+        print("Exponential Tensor:", values_exp)
+
+        # If you want to multiply by 10000 after taking the exponential
+        values_exp_times_10000 = values_exp * 10000
+        print("Exponential Tensor * 10000:", values_exp_times_10000)
         sentences_conf = self._predict_sentence()
 
         self._update_data(persons_conf, sentences_conf)
@@ -136,22 +155,24 @@ class MainWindow(QtWidgets.QMainWindow):
         return result
 
     def _update_data(self, persons_conf, sent_conf):
+        print('persons_conf:', persons_conf)
         person_label_map = {
-            "amir_hesham": self.amir_hesham,
-            "omar_emad": self.omar_emad,
-            "farah_ossama": self.farah_ossama,
-            "omar_mohamed": self.omar_mohamed,
-            "merna_abdelmoez": self.merna_abdelmoez,
-            "mohamed_elsayed": self.mohamed_elsayed,
-            "omar_nabil": self.omar_nabil,
-            "ossama_mohamed": self.ossama_mohamed,
+            "Amir Hesham": self.amir_hesham,
+            "Abdallah Magdy": self.omar_emad,
+            "Mohamed Ibrahim": self.farah_ossama,
+            "Omar Mohamed": self.omar_mohamed,
+            "Muhammed Alaa": self.merna_abdelmoez,
+            "Mohamed Elsayed": self.mohamed_elsayed,
+            "Youssef Ahmed": self.omar_nabil,
+            "Osama Mohamed": self.ossama_mohamed,
         }
-        
 
         for person, label in person_label_map.items():
+            print(person)
             if persons_conf.get(person):
-                label.setText(str(int(persons_conf[person])) + "%")
-            else:    
+                print(persons_conf.get(person))
+                label.setText(str(int(persons_conf[person] * 100)) + "%")
+            else:
                 label.setText('0%')
 
         # Update sentence prediction confidences

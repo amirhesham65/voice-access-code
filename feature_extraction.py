@@ -49,16 +49,29 @@ def extract_spectral_contrast(file_path):
     return pd.DataFrame(spectral_contrast, columns=feature_names)
 
 
-# extract all the features into on df for input
+# extract all the features intoon df for input
 def extract_input_features(input_path):
-    df = pd.concat(
-        [
-            extract_mfccs(input_path),
-            extract_chroma(input_path),
-            extract_zero_crossings(input_path),
-            extract_spectral_contrast(input_path),
-        ],
-        axis=1,
-    )
+    y, sr = librosa.load(input_path)
+    # Extract various audio features using librosa functions
+    chroma = librosa.feature.chroma_stft(y=y, sr=sr)
+    spectral_contrast = librosa.feature.spectral_contrast(y=y, sr=sr)
+    spectral_centroid = librosa.feature.spectral_centroid(y=y, sr=sr)
+    spectral_bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=sr)
+    onset_frames = librosa.onset.onset_detect(y=y, sr=sr)
+    onset_times = librosa.frames_to_time(onset_frames, sr=sr)
+    zero_crossing_rate = librosa.feature.zero_crossing_rate(y)
+    mfccs = librosa.feature.mfcc(y=y, sr=sr)
+    spectrogram = np.abs(librosa.stft(y))
 
-    df.to_csv("./input/recorded_audio.csv", index=False)
+    # Concatenate the mean values of different features along axis=1
+    all_features = np.concatenate([
+        np.mean(chroma, axis=1),
+        np.mean(spectrogram, axis=1),
+        np.mean(spectral_contrast, axis=1),
+        np.mean(zero_crossing_rate, axis=1),
+        np.mean(mfccs, axis=1),
+        # np.mean(spectral_centroid, axis=1),
+        # np.mean(spectral_bandwidth, axis=1),
+    ])
+    print("all features:", all_features)
+    return all_features
