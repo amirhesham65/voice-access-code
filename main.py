@@ -10,7 +10,6 @@ import demo
 from feature_extraction import extract_input_features
 from models.person_classifier import PersonClassifier
 from models.sentence_classifier import SentenceClassifier
-from demo import detect_person
 import torch
 
 FORMAT = pyaudio.paInt16
